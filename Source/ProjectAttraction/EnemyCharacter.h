@@ -14,4 +14,10 @@ class PROJECTATTRACTION_API AEnemyCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	int Color;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	bool FallInLove;
 };
