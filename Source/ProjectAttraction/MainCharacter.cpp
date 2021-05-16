@@ -118,7 +118,10 @@ void AMainCharacter::Attract()
 	if (!IsAttracting) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attracting!")));
 		IsAttracting = true;
-		Character->SetFlipbook(AttractAnimation);
+
+		if (Character && AttractAnimation) {
+			Character->SetFlipbook(AttractAnimation);
+		}
 	}
 }
 
@@ -127,7 +130,9 @@ void AMainCharacter::StopAttracting()
 	if (IsAttracting) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stop Attracting!")));
 		IsAttracting = false;
-		Character->SetFlipbook(IdleAnimation);
+		if (Character && IdleAnimation) {
+			Character->SetFlipbook(IdleAnimation);
+		}
 	}
 }
 
@@ -227,7 +232,7 @@ void AMainCharacter::Tick(float DeltaTime)
 
 							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attracting NPCS")));
 							IsAbsorbing = true;
-							EnemyCharacterReference->TimeNeededForAttracting -= 0.01;
+							EnemyCharacterReference->TimeNeededForAttracting -= 0.06;
 						}
 					}
 				}
