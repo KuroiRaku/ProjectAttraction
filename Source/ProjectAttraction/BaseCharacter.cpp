@@ -18,7 +18,16 @@
 // Sets default values
 ABaseCharacter::ABaseCharacter()
 {
+	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
+	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
+	//Set up Sprite Component
+	Character = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Character"));
+	Character->AttachTo(RootComponent);
+	Character->SetWorldScale3D(FVector(4, 4, 4));
+	Character->SetRelativeScale3D(FVector(4, 4, 4));
+	Character->SetRelativeRotation(FRotator(0, 90, 0));
+	Character->SetVisibility(true);
 }
 
 // Called when the game starts or when spawned

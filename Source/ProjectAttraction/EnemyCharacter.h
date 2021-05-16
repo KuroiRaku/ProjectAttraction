@@ -15,9 +15,20 @@ class PROJECTATTRACTION_API AEnemyCharacter : public ABaseCharacter
 	GENERATED_BODY()
 	
 public:
+	// 1 for Red, 2 for Green, 3 for Blue
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
 	int Color;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
 	bool FallInLove;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	class UPaperFlipbook* FallInLoveAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	class UPaperFlipbook* HeartBeingAbsorbAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	float TimeNeededForAttracting;
+
 };

@@ -19,6 +19,8 @@ AMainCharacter::AMainCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnOverlapBegin);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AMainCharacter::OnOverlapEnd);
 
 	// Don't rotate when the controller rotates.
 	bUseControllerRotationPitch = false;
@@ -50,18 +52,11 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetCharacterMovement()->MaxFlySpeed = 600.f;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
-
-	//Set up Sprite Component
-	Character = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("MainCharacter"));
-	Character->AttachTo(RootComponent);
-	Character->SetWorldScale3D(FVector(4, 4, 4));
-	Character->SetRelativeScale3D(FVector(4, 4, 4));
-	Character->SetRelativeRotation(FRotator(0, 90, 0));
-
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
+	IsAttracting = false;
+	IsInterecting = false;
+	IsAbsorbing = false;
 }
 
 void AMainCharacter::MoveRight(float Value)
@@ -86,15 +81,15 @@ void AMainCharacter::MoveRight(float Value)
 		}
 
 		AddMovementInput(Direction, Value);
+		Character->SetFlipbook(RunningAnimation);
 	}
 }
 
 void AMainCharacter::MoveForward(float Value)
 {
 	//normal movement speed
-	if ((Controller != NULL) && (Value != 0.0f))
+	if ((Controller != NULL) && (Value != 0.0f) && !IsAttracting)
 	{
-
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -102,9 +97,8 @@ void AMainCharacter::MoveForward(float Value)
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-
-
 		AddMovementInput(Direction, Value);
+		Character->SetFlipbook(RunningAnimation);
 	}
 }
 
@@ -113,14 +107,131 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	// set up gameplay key bindings
 
 	PlayerInputComponent->BindAction("Attract", IE_Pressed, this, &AMainCharacter::Attract);
-	PlayerInputComponent->BindAction("Attract", IE_Released, this, &AMainCharacter::Attract);
+	PlayerInputComponent->BindAction("Attract", IE_Released, this, &AMainCharacter::StopAttracting);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMainCharacter::MoveRight);
-
 }
 
 void AMainCharacter::Attract()
 {
-	Character->SetFlipbook(AttractAnimation);
+	if (!IsAttracting) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attracting!")));
+		IsAttracting = true;
+		Character->SetFlipbook(AttractAnimation);
+	}
+}
+
+void AMainCharacter::StopAttracting()
+{
+	if (IsAttracting) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stop Attracting!")));
+		IsAttracting = false;
+		Character->SetFlipbook(IdleAnimation);
+	}
+}
+
+// This only trigger once when they overlap, it won't keep checking
+void AMainCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// check if Actors do not equal nullptr
+	if (OtherActor && (OtherActor != this))
+	{
+		AEnemyCharacter* enemyCharacter = Cast<AEnemyCharacter>(OtherActor);
+		if (enemyCharacter)
+		{
+			IsInterecting = true;
+			EnemyCharacterReference = enemyCharacter;
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Start Overlapping! Enemy Time Left: %f"), EnemyCharacterReference->TimeNeededForAttracting));
+		}
+
+	}
+}
+
+void AMainCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor && (OtherActor != this))
+	{
+		AEnemyCharacter* enemyCharacter = Cast<AEnemyCharacter>(OtherActor);
+		if (enemyCharacter) 
+		{
+			IsInterecting = false;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stop Overlapping!")));
+		}
+	}
+}
+
+void AMainCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// every second, the time needed to finish attracting will decrease
+	if (IsInterecting) 
+	{
+		if (IsAttracting)
+		{
+			if (EnemyCharacterReference) 
+			{
+				if (EnemyCharacterReference->Color == TargetColor && !EnemyCharacterReference->FallInLove)
+				{
+					if (HP >= EnemyCharacterReference->HP)
+					{
+						// When finish absorbing heart
+						if (EnemyCharacterReference->TimeNeededForAttracting <= 1 && EnemyCharacterReference->TimeNeededForAttracting > 0)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Finish Attracting and minus HP %f"), EnemyCharacterReference->HP));
+							HP -= EnemyCharacterReference->HP;
+
+							if (EnemyCharacterReference->Character) {
+								EnemyCharacterReference->Character->SetFlipbook(EnemyCharacterReference->FallInLoveAnimation);
+							}
+
+							TargetColor += 1;
+							// Changing RGB
+							if (TargetColor >= 4 || TargetColor <= 0)
+							{
+								// Reset to Green
+								TargetColor = 1;
+							}
+							IsAbsorbing = false;
+
+							if (EnemyCharacterReference->Character) {
+								EnemyCharacterReference->Character->SetFlipbook(EnemyCharacterReference->FallInLoveAnimation);
+							}
+
+							EnemyCharacterReference->HP = 0;
+							EnemyCharacterReference->TimeNeededForAttracting = 0;
+							EnemyCharacterReference->FallInLove = true;
+						}
+						else if (EnemyCharacterReference->TimeNeededForAttracting > 1)
+						{
+							// Only set the flipbook once
+							if (!IsAbsorbing)
+							{
+								if (EnemyCharacterReference->Character) 
+								{
+									if (EnemyCharacterReference->HeartBeingAbsorbAnimation) {
+										EnemyCharacterReference->Character->SetFlipbook(EnemyCharacterReference->HeartBeingAbsorbAnimation);
+									}
+									else
+									{
+										GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enemy HeartBeingAbsorbAnimation is missing")));
+									}
+								}
+								else
+								{
+									GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Enemy paper2d flipbook component is missing")));
+								}
+							}
+
+							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attracting NPCS")));
+							IsAbsorbing = true;
+							EnemyCharacterReference->TimeNeededForAttracting -= 0.01;
+						}
+					}
+				}
+			}
+		}
+	}
 }
