@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
 #include "BaseCharacter.h"
 #include "EnemyCharacter.generated.h"
 
@@ -15,6 +17,8 @@ class PROJECTATTRACTION_API AEnemyCharacter : public ABaseCharacter
 	GENERATED_BODY()
 	
 public:
+	AEnemyCharacter();
+
 	// 1 for Red, 2 for Green, 3 for Blue
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
 	int Color;
@@ -33,5 +37,14 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
 	float TimeNeededForAttracting;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	USoundCue* TalkAudioCue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	USoundCue* FallInLoveAudioCue;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	UAudioComponent* NPCAudioComponent;
 
 };
