@@ -207,6 +207,7 @@ void AMainCharacter::Tick(float DeltaTime)
 
 							EnemyCharacterReference->HP = 0;
 							EnemyCharacterReference->TimeNeededForAttracting = 0;
+							Score += EnemyCharacterReference->Score;
 							EnemyCharacterReference->FallInLove = true;
 						}
 						else if (EnemyCharacterReference->TimeNeededForAttracting > 1)
@@ -232,7 +233,7 @@ void AMainCharacter::Tick(float DeltaTime)
 
 							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attracting NPCS")));
 							IsAbsorbing = true;
-							EnemyCharacterReference->TimeNeededForAttracting -= 0.06;
+							EnemyCharacterReference->TimeNeededForAttracting -= 0.016;
 						}
 					}
 				}
