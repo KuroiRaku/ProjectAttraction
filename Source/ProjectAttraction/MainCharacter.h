@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
 #include <ProjectAttraction\EnemyCharacter.h>
 #include "MainCharacter.generated.h"
 
@@ -45,6 +47,15 @@ protected:
 	int TargetColor;
 
 public: 
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	USoundCue* AttractAudioCue;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	USoundCue* FootstepAudioCue;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	UAudioComponent* PlayerAudioComponent;
 
 	FTimerHandle TimerForAttracting;
 
