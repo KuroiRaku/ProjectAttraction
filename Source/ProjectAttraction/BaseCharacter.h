@@ -15,6 +15,18 @@ public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	float HP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	class UPaperFlipbookComponent* Character;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	class UPaperFlipbook* IdleAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
+	bool IsInteractingCharacter;
+
 protected:
 	/** Side view camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -26,18 +38,6 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	class UPaperFlipbookComponent* Character;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	class UPaperFlipbook* Idle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	float HP;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character", meta = (AllowPrivateAccess = "true"))
-	bool IsInteractingCharacter;
 
 public:	
 
