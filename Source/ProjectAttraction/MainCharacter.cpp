@@ -52,6 +52,13 @@ AMainCharacter::AMainCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	GetCharacterMovement()->MaxFlySpeed = 600.f;
 
+	PlayerAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("PlayerAudioComponent"));
+	PlayerAudioComponent->bAutoActivate = false; // don't play the sound immediately.
+	// I want the sound to follow the pawn around, so I attach it to the Pawns root.
+	PlayerAudioComponent->AttachTo(RootComponent);
+	// I want the sound to come from slighty in front of the pawn.
+	PlayerAudioComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	IsAttracting = false;
@@ -82,6 +89,23 @@ void AMainCharacter::MoveRight(float Value)
 
 		AddMovementInput(Direction, Value);
 		Character->SetFlipbook(RunningAnimation);
+
+		if (FootstepAudioCue) {
+			if (PlayerAudioComponent->Sound == FootstepAudioCue) {
+				PlayerAudioComponent->Play();
+			}
+			else {
+				PlayerAudioComponent->SetSound(FootstepAudioCue);
+				PlayerAudioComponent->Play();
+			}
+		}
+	}
+	else
+	{
+		if (FootstepAudioCue)
+		{
+			PlayerAudioComponent->Stop();
+		}
 	}
 }
 
@@ -99,7 +123,25 @@ void AMainCharacter::MoveForward(float Value)
 
 		AddMovementInput(Direction, Value);
 		Character->SetFlipbook(RunningAnimation);
+
+		if (FootstepAudioCue) {
+			if (PlayerAudioComponent->Sound == FootstepAudioCue) {
+				PlayerAudioComponent->Play();
+			}
+			else {
+				PlayerAudioComponent->SetSound(FootstepAudioCue);
+				PlayerAudioComponent->Play();
+			}
+		}
 	}
+	else
+	{
+		if (FootstepAudioCue)
+		{
+			PlayerAudioComponent->Stop();
+		}
+	}
+
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -122,6 +164,18 @@ void AMainCharacter::Attract()
 		if (Character && AttractAnimation) {
 			Character->SetFlipbook(AttractAnimation);
 		}
+
+		if (AttractAudioCue)
+		{
+			PlayerAudioComponent->SetSound(AttractAudioCue);
+			PlayerAudioComponent->Play();
+		}
+
+		if (EnemyCharacterReference && EnemyCharacterReference->TalkAudioCue)
+		{
+			EnemyCharacterReference->NPCAudioComponent->SetSound(EnemyCharacterReference->TalkAudioCue);
+			EnemyCharacterReference->NPCAudioComponent->Play();
+		}
 	}
 }
 
@@ -130,8 +184,14 @@ void AMainCharacter::StopAttracting()
 	if (IsAttracting) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stop Attracting!")));
 		IsAttracting = false;
+
 		if (Character && IdleAnimation) {
 			Character->SetFlipbook(IdleAnimation);
+		}
+
+		if (AttractAudioCue)
+		{
+			PlayerAudioComponent->Stop();
 		}
 	}
 }
@@ -203,6 +263,12 @@ void AMainCharacter::Tick(float DeltaTime)
 
 							if (EnemyCharacterReference->Character) {
 								EnemyCharacterReference->Character->SetFlipbook(EnemyCharacterReference->FallInLoveAnimation);
+							}
+
+							if (EnemyCharacterReference->FallInLoveAudioCue)
+							{
+								EnemyCharacterReference->NPCAudioComponent->SetSound(EnemyCharacterReference->FallInLoveAudioCue);
+								EnemyCharacterReference->NPCAudioComponent->Play();
 							}
 
 							EnemyCharacterReference->HP = 0;
