@@ -91,20 +91,8 @@ void AMainCharacter::MoveRight(float Value)
 		Character->SetFlipbook(RunningAnimation);
 
 		if (FootstepAudioCue) {
-			if (PlayerAudioComponent->Sound == FootstepAudioCue) {
-				PlayerAudioComponent->Play();
-			}
-			else {
-				PlayerAudioComponent->SetSound(FootstepAudioCue);
-				PlayerAudioComponent->Play();
-			}
-		}
-	}
-	else
-	{
-		if (FootstepAudioCue)
-		{
-			PlayerAudioComponent->Stop();
+			PlayerAudioComponent->SetSound(FootstepAudioCue);
+			PlayerAudioComponent->Play();
 		}
 	}
 }
@@ -125,20 +113,8 @@ void AMainCharacter::MoveForward(float Value)
 		Character->SetFlipbook(RunningAnimation);
 
 		if (FootstepAudioCue) {
-			if (PlayerAudioComponent->Sound == FootstepAudioCue) {
-				PlayerAudioComponent->Play();
-			}
-			else {
-				PlayerAudioComponent->SetSound(FootstepAudioCue);
-				PlayerAudioComponent->Play();
-			}
-		}
-	}
-	else
-	{
-		if (FootstepAudioCue)
-		{
-			PlayerAudioComponent->Stop();
+			PlayerAudioComponent->SetSound(FootstepAudioCue);
+			PlayerAudioComponent->Play();
 		}
 	}
 
@@ -245,8 +221,9 @@ void AMainCharacter::Tick(float DeltaTime)
 						// When finish absorbing heart
 						if (EnemyCharacterReference->TimeNeededForAttracting <= 1 && EnemyCharacterReference->TimeNeededForAttracting > 0)
 						{
-							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Finish Attracting and minus HP %f"), EnemyCharacterReference->HP));
+							
 							HP -= EnemyCharacterReference->HP;
+							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Finish Attracting and minus HP %f Current HP: %f"), EnemyCharacterReference->HP, HP));
 
 							if (EnemyCharacterReference->Character) {
 								EnemyCharacterReference->Character->SetFlipbook(EnemyCharacterReference->FallInLoveAnimation);
@@ -274,6 +251,8 @@ void AMainCharacter::Tick(float DeltaTime)
 							EnemyCharacterReference->HP = 0;
 							EnemyCharacterReference->TimeNeededForAttracting = 0;
 							Score += EnemyCharacterReference->Score;
+							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Finish Attracting and enemy score %f Current Score: %f"), EnemyCharacterReference->Score, Score));
+
 							EnemyCharacterReference->FallInLove = true;
 						}
 						else if (EnemyCharacterReference->TimeNeededForAttracting > 1)
@@ -299,7 +278,7 @@ void AMainCharacter::Tick(float DeltaTime)
 
 							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Attracting NPCS")));
 							IsAbsorbing = true;
-							EnemyCharacterReference->TimeNeededForAttracting -= 0.016;
+							EnemyCharacterReference->TimeNeededForAttracting -= 0.05;
 						}
 					}
 				}
